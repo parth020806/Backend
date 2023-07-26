@@ -24,4 +24,5 @@ urlpatterns = [
     path('users/login/', login),
     path('users/forgetpassword/', forget_password),
     path('contact/', contact_view, name='contact'),
+    path('product_details/<str:product_id>/', product_details, name='product_details'),
 ]

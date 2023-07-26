@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-#14r8qon5q2*8t$2-kf&1vjfk44h92$l)fbqwqs&3_4lcf!(r2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['mlmproject.pythonanywhere.com']
+ALLOWED_HOSTS = ['mlmproject.pythonanywhere.com', '127.0.0.1']
 CORS_ORIGIN_ALLOW_ALL = True
 
 

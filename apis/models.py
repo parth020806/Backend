@@ -33,4 +33,16 @@ class ContactModel(models.Model):
 
     def __str__(self):
         return self.email
+    
+
+class ProductModel(models.Model):
+    product_id = models.CharField(max_length=100, null=True)
+    product_name = models.CharField(max_length=100, null=True)
+    product_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    product_description = models.TextField(null=True)
+    product_image = models.ImageField(upload_to='products/')
+
+    def __str__(self):
+        return self.product_name
+
 

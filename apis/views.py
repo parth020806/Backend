@@ -2,7 +2,7 @@ import email
 import json
 from unicodedata import name
 from django.shortcuts import render, redirect
-from apis.models import UserInfoModel, ContactModel
+from apis.models import UserInfoModel, ContactModel, ProductModel
 import random
 import string
 from django.contrib.auth.models import User
@@ -93,3 +93,17 @@ def contact_view(request):
         message = data.get('message')
         ContactModel.objects.create(email=email, message=message)
         return JsonResponse({'message': 'Feedback saved successfully'})
+    
+#product view
+@csrf_exempt
+def product_details(request, product_id):
+    if request.method == 'GET':
+        product = ProductModel.objects.get(product_id = product_id)
+        product_data = {
+            'product_id' : product.product_id,
+            'product_name': product.product_name,
+            'product_price': str(product.product_price),
+            'product_description': product.product_description,
+            'product_image': product.product_image.url if product.product_image else None,
+        }
+        return JsonResponse(product_data)
