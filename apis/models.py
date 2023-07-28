@@ -44,5 +44,13 @@ class ProductModel(models.Model):
 
     def __str__(self):
         return self.product_name
+    
 
+class CartModel(models.Model):
+    product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserInfoModel, on_delete=models.CASCADE)
+    final_quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_done = models.BooleanField(default=False)
+    order_ref_id = models.CharField(max_length=100, null=True)
 

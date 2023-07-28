@@ -2,7 +2,7 @@ import email
 import json
 from unicodedata import name
 from django.shortcuts import render, redirect
-from apis.models import UserInfoModel, ContactModel, ProductModel
+from apis.models import UserInfoModel, ContactModel, ProductModel, CartModel
 import random
 import string
 from django.contrib.auth.models import User
@@ -107,3 +107,71 @@ def product_details(request, product_id):
             'product_image': product.product_image.url if product.product_image else None,
         }
         return JsonResponse(product_data)
+
+
+#cart view
+@csrf_exempt
+def cart_view(request, username):
+    if request.method == 'GET':
+        cart_items = CartModel.objects.all()
+        cart_data = []
+        for cart_item in cart_items:
+            product_data = {
+                'image': cart_item.product.product_image.url,
+                'name': cart_item.product.product_name,
+                'user_id': cart_item.user.username,
+                'product_id': cart_item.product.product_id,
+                'final_quantity': cart_item.final_quantity,
+                'total_price': str(cart_item.total_price),
+                'payment_done': cart_item.payment_done ,
+                'order_ref_id': cart_item.order_ref_id 
+            }
+            cart_data.append(product_data)
+        return JsonResponse(cart_data, safe=False)
+
+
+    elif request.method == 'POST':
+        data = request.POST
+        product_id = data.get('product_id')
+        quantity = int(data.get('final_quantity'))
+
+        try:
+            product = ProductModel.objects.get(product_id=product_id)
+        except ProductModel.DoesNotExist:
+            return JsonResponse({'error': 'Product not found.'}, status=404)
+
+        total_price = float(product.product_price) * quantity
+        cart_item = CartModel.objects.create(
+            product=product,
+            final_quantity=quantity,
+            total_price=total_price
+        )
+        return JsonResponse({'success': 'Item added to the cart successfully.'})
+    
+    elif request.method == 'PUT':
+        data = request.POST
+        product_id = data.get('product_id')
+        quantity = int(data.get('final_quantity'))
+
+        try:
+            cart_item = CartModel.objects.get(product__product_id=product_id)
+        except CartModel.DoesNotExist:
+            return JsonResponse({'error': 'Item not found in the cart.'}, status=404)
+
+        cart_item.final_quantity = quantity
+        cart_item.total_price = float(cart_item.product.price) * quantity
+        cart_item.save()
+        return JsonResponse({'success': 'Cart item updated successfully.'})
+    
+
+    elif request.method == 'DELETE':
+        data = request.POST
+        product_id = data.get('product_id')
+
+        try:
+            cart_item = CartModel.objects.get(product__product_id=product_id)
+        except CartModel.DoesNotExist:
+            return JsonResponse({'error': 'Item not found in the cart.'}, status=404)
+
+        cart_item.delete()
+        return JsonResponse({'success': 'Cart item deleted successfully.'})
