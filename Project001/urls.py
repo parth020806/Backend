@@ -25,5 +25,5 @@ urlpatterns = [
     path('users/forgetpassword/', forget_password),
     path('contact/', contact_view, name='contact'),
     path('product_details/<str:product_id>/', product_details, name='product_details'),
-    path('cart/username', views.cart_view, name='cart'),
+    path('cart/username', cart_view, name='cart'),
 ]
