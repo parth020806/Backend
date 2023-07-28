@@ -47,6 +47,7 @@ class ProductModel(models.Model):
     
 
 class CartModel(models.Model):
+    user = models.ForeignKey(UserInfoModel, on_delete=models.CASCADE)
     product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
     user = models.ForeignKey(UserInfoModel, on_delete=models.CASCADE)
     final_quantity = models.PositiveIntegerField(default=1)
