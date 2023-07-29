@@ -113,7 +113,8 @@ def product_details(request, product_id):
 @csrf_exempt
 def cart_view(request, username):
     if request.method == 'GET':
-        cart_items = CartModel.objects.all()
+        user = UserInfoModel.objects.get(username = username)
+        cart_items = CartModel.objects.filter(user=user)
         cart_data = []
         for cart_item in cart_items:
             product_data = {
@@ -124,14 +125,15 @@ def cart_view(request, username):
                 'final_quantity': cart_item.final_quantity,
                 'total_price': str(cart_item.total_price),
                 'payment_done': cart_item.payment_done ,
-                'order_ref_id': cart_item.order_ref_id 
+                'order_ref_id' : cart_item.order_ref_id
             }
             cart_data.append(product_data)
         return JsonResponse(cart_data, safe=False)
 
 
     elif request.method == 'POST':
-        data = request.POST
+        data=json.loads(request.body)
+        user = UserInfoModel.objects.get(username = username)
         product_id = data.get('product_id')
         quantity = int(data.get('final_quantity'))
 
@@ -141,35 +143,43 @@ def cart_view(request, username):
             return JsonResponse({'error': 'Product not found.'}, status=404)
 
         total_price = float(product.product_price) * quantity
+        ref_id = 0
+        last_ref_id = CartModel.objects.order_by('-order_ref_id').first()
+        if last_ref_id:
+            ref_id = int(last_ref_id.order_ref_id)+1
+        else:
+            ref_id = 10000000
         cart_item = CartModel.objects.create(
+            user=user,
             product=product,
             final_quantity=quantity,
-            total_price=total_price
+            total_price=total_price,
+            order_ref_id=ref_id
         )
         return JsonResponse({'success': 'Item added to the cart successfully.'})
     
     elif request.method == 'PUT':
-        data = request.POST
-        product_id = data.get('product_id')
+        data=json.loads(request.body)
+        order_ref_id = data.get('order_ref_id')
         quantity = int(data.get('final_quantity'))
 
         try:
-            cart_item = CartModel.objects.get(product__product_id=product_id)
+            cart_item = CartModel.objects.get(order_ref_id=order_ref_id)
         except CartModel.DoesNotExist:
             return JsonResponse({'error': 'Item not found in the cart.'}, status=404)
 
         cart_item.final_quantity = quantity
-        cart_item.total_price = float(cart_item.product.price) * quantity
+        cart_item.total_price = float(cart_item.product.product_price) * quantity
         cart_item.save()
         return JsonResponse({'success': 'Cart item updated successfully.'})
     
 
     elif request.method == 'DELETE':
-        data = request.POST
-        product_id = data.get('product_id')
+        data = json.loads(request.body)
+        order_ref_id = data.get('order_ref_id')
 
         try:
-            cart_item = CartModel.objects.get(product__product_id=product_id)
+            cart_item = CartModel.objects.get(order_ref_id=order_ref_id)
         except CartModel.DoesNotExist:
             return JsonResponse({'error': 'Item not found in the cart.'}, status=404)
 
